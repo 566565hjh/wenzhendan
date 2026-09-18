@@ -1,0 +1,1470 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>问诊记录</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='110' fill='%231c1c1e'/%3E%3Ctext x='256' y='345' font-size='290' font-family='sans-serif' font-weight='700' fill='%23fff' text-anchor='middle'%3E问%3C/text%3E%3C/svg%3E">
+<script>
+(function(){
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#1c1c1e"/><text x="256" y="345" font-size="290" font-family="sans-serif" font-weight="700" fill="#fff" text-anchor="middle">问</text></svg>';
+  var iconData = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  var manifest = {
+    name: "问诊记录",
+    short_name: "问诊记录",
+    start_url: ".",
+    scope: ".",
+    display: "standalone",
+    orientation: "portrait",
+    background_color: "#f2f2f7",
+    theme_color: "#f2f2f7",
+    icons: [{
+      src: iconData,
+      sizes: "512x512",
+      type: "image/svg+xml",
+      purpose: "any maskable"
+    }]
+  };
+  var mData = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+  var link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = mData;
+  document.head.appendChild(link);
+})();
+</script>
+<meta name="theme-color" content="#f2f2f7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="问诊记录">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:#f2f2f7;color:#1c1c1e;font-size:15px;line-height:1.5;padding-bottom:100px}
+  body.locked{overflow:hidden}
+  .top{position:sticky;top:0;z-index:10;background:rgba(242,242,247,.94);
+    backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+    border-bottom:1px solid #e2e2e7;padding:10px 14px 12px}
+  .top-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+  .top-row h1{font-size:18px;margin:0;font-weight:600}
+  .top-actions{display:flex;gap:6px}
+  .icon-btn{border:0;background:#e8e8ed;color:#333;border-radius:8px;padding:6px 10px;font-size:13px;font-family:inherit}
+  .icon-btn:active{background:#dcdce2}
+  .search-wrap{position:relative;margin-bottom:10px}
+  .search-wrap input{width:100%;border:0;border-radius:9px;padding:9px 12px 9px 33px;
+    font-size:15px;font-family:inherit;background:#e8e8ed;color:#111;-webkit-appearance:none}
+  .search-wrap input:focus{outline:none;background:#fff;box-shadow:0 0 0 1px #d0d0d6}
+  .search-wrap::before{content:'';position:absolute;left:12px;top:50%;width:13px;height:13px;
+    transform:translateY(-50%);pointer-events:none;
+    background:no-repeat center/contain url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2.2' stroke-linecap='round'><circle cx='11' cy='11' r='7'/><path d='M20 20l-3.5-3.5'/></svg>")}
+  .stats{display:flex;gap:8px}
+  .stat{flex:1;background:#fff;border-radius:10px;padding:7px 10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .stat .label{display:block;font-size:12px;color:#8e8e93}
+  .stat b{font-size:17px;font-weight:600}
+  main{padding:12px 14px 0}
+  .today-card{background:#fff5f4;border:1px solid #ffd8d4;border-radius:12px;
+    margin-bottom:12px;overflow:hidden;box-shadow:0 1px 3px rgba(217,44,32,.10)}
+  .today-head{padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
+  .today-title{font-size:15px;font-weight:600;color:#d92c20}
+  .today-count{background:#d92c20;color:#fff;font-size:12px;padding:1px 8px;border-radius:10px;font-weight:500}
+  .today-hint{margin-left:auto;font-size:12px;color:#d92c20;opacity:.7}
+  .today-arrow{color:#d92c20;font-size:11px;transition:transform .15s}
+  .today-card.open .today-arrow{transform:rotate(180deg)}
+  .today-list{display:none;padding:0 14px 12px 14px;flex-wrap:wrap;gap:6px}
+  .today-card.open .today-list{display:flex}
+  .today-name{display:inline-block;background:#fff;color:#d92c20;border:1px solid #ffd8d4;
+    border-radius:8px;padding:6px 12px;font-size:14px;font-family:inherit;cursor:pointer}
+  .today-name:active{background:#ffe8e6}
+  .day-group{margin-bottom:14px}
+  .day-head{display:flex;justify-content:space-between;align-items:baseline;
+    font-size:13px;color:#8e8e93;padding:0 4px 6px}
+  .rec{background:#fff;border-radius:12px;padding:12px 13px;margin-bottom:9px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);position:relative}
+  .rec:active{background:#fafafc}
+  .rec-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px}
+  .rec-name{font-weight:600;font-size:16px}
+  .badge{font-size:11px;padding:1.5px 6px;border-radius:5px;font-weight:400}
+  .badge.male{background:#e8f0fb;color:#2f6bb0}
+  .badge.female{background:#fce8f0;color:#b02f6b}
+  .badge.first{background:#eaf6ee;color:#1a8a3c}
+  .badge.return{background:#fff4e5;color:#b06f1a}
+  .badge.med{background:#fff0ee;color:#d92c20}
+  .rec-time{margin-left:auto;font-size:12px;color:#8e8e93;flex:0 0 auto}
+  .rec-issue{font-size:13px;color:#555;margin-bottom:7px;font-weight:500;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .rec-tags{display:flex;flex-wrap:wrap;gap:5px}
+  .tag{font-size:11.5px;padding:2px 8px;border-radius:6px;background:#f0f0f3;color:#555}
+  .tag.warn{background:#fdf0e6;color:#b06f1a}
+  .tag.muted{background:#f7f7fa;color:#8e8e93}
+  .empty{text-align:center;color:#8e8e93;padding:60px 20px;font-size:14px;line-height:2}
+  .fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));
+    width:56px;height:56px;border-radius:28px;border:0;background:#1c1c1e;color:#fff;
+    font-size:30px;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,.22);
+    display:flex;align-items:center;justify-content:center;padding-bottom:3px}
+  .fab:active{transform:scale(.95)}
+  .modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.4);display:none;
+    align-items:flex-end;justify-content:center}
+  .modal.open{display:flex}
+  .sheet{width:100%;max-width:640px;max-height:93vh;background:#fff;
+    border-radius:18px 18px 0 0;display:flex;flex-direction:column;
+    animation:slideUp .22s ease;padding-bottom:env(safe-area-inset-bottom)}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;border-bottom:1px solid #f2f2f7;flex:0 0 auto}
+  .sheet-head b{font-size:16px;font-weight:600}
+  .close{border:0;background:transparent;font-size:20px;color:#8e8e93;padding:0 4px;line-height:1;font-family:inherit}
+  .sheet-body{padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .sheet-foot{display:flex;gap:10px;padding:12px 16px 16px;border-top:1px solid #f2f2f7;
+    flex:0 0 auto;background:#fff}
+  .sheet-foot.column{flex-direction:column}
+  .btn{flex:1;border:0;border-radius:10px;padding:12px;font-size:15px;font-family:inherit;font-weight:500}
+  .btn-primary{background:#1c1c1e;color:#fff}
+  .btn-primary:active{background:#000}
+  .btn-secondary{background:#e8e8ed;color:#333}
+  .btn-secondary:active{background:#dcdce2}
+  .btn-danger{background:#ffe8e6;color:#d92c20}
+  .btn-danger:active{background:#ffd8d4}
+  .btn-followup{background:#fff4e5;color:#b06f1a}
+  .btn-followup:active{background:#ffe6c9}
+  .form-section{margin-bottom:18px}
+  .form-section-title{font-size:13px;color:#8e8e93;font-weight:500;margin:0 0 9px;
+    padding-bottom:6px;border-bottom:1px solid #f2f2f7}
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:13px;color:#8e8e93;margin-bottom:5px}
+  .field input[type=text],.field input[type=number],.field input[type=datetime-local],
+  .field input[type=date]{width:100%;border:1px solid #ddd;border-radius:9px;padding:10px 11px;
+    font-size:15px;font-family:inherit;background:#fafafa;color:#111;-webkit-appearance:none}
+  .field input:focus{outline:none;border-color:#999;background:#fff}
+  .field-row{display:flex;gap:10px}
+  .field-row .field{flex:1}
+  .seg{display:flex;background:#f0f0f3;border-radius:9px;padding:3px;gap:3px}
+  .seg-btn{flex:1;border:0;background:transparent;padding:8px;border-radius:7px;
+    font-size:14px;font-family:inherit;color:#666}
+  .seg-btn.active{background:#fff;color:#111;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .q-item{margin-bottom:13px}
+  .q-label{font-size:13px;color:#333;font-weight:500;margin-bottom:6px}
+  .q-chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{border:1px solid #e2e2e7;background:#fff;color:#555;padding:5px 11px;
+    border-radius:15px;font-size:12.5px;font-family:inherit;transition:all .1s}
+  .chip.active{background:#1c1c1e;color:#fff;border-color:#1c1c1e}
+  .chip-other.active{background:#3a6ea5;border-color:#3a6ea5}
+  .q-extra{margin-top:7px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .q-extra label{font-size:12.5px;color:#666;display:flex;align-items:center;gap:5px}
+  .q-extra input[type=checkbox]{width:16px;height:16px;margin:0}
+  .q-extra input[type=text],.q-extra input[type=number]{flex:1;min-width:80px;
+    border:1px solid #e2e2e7;border-radius:7px;padding:5px 9px;font-size:13px;
+    font-family:inherit;background:#fff}
+  .q-extra input:focus{outline:none;border-color:#999}
+  .other-input{width:100%;margin-top:6px;border:1px solid #ddd;border-radius:8px;
+    padding:7px 10px;font-size:13.5px;font-family:inherit;background:#fff;color:#111}
+  .other-input:focus{outline:none;border-color:#3a6ea5;box-shadow:0 0 0 2px rgba(58,110,165,.12)}
+  .date-wheel{display:flex;gap:6px}
+  .date-wheel select{
+    flex:1;min-width:0;border:1px solid #ddd;border-radius:9px;
+    padding:10px 26px 10px 10px;font-size:15px;font-family:inherit;
+    background:#fafafa;color:#111;
+    -webkit-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' stroke='%238e8e93' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center;
+  }
+  .date-wheel select:focus{outline:none;border-color:#999;background-color:#fff}
+  .mai-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mai-side{background:#fafafa;border:1px solid #f0f0f3;border-radius:10px;
+    padding:8px 9px;min-width:0;box-sizing:border-box}
+  .mai-side-title{font-size:13px;font-weight:600;color:#333;
+    margin-bottom:7px;text-align:center}
+  .mai-pos{margin-bottom:8px}
+  .mai-pos:last-child{margin-bottom:0}
+  .mai-pos-label{font-size:11.5px;color:#666;margin-bottom:4px;font-weight:500}
+  .mai-chips{display:flex;flex-wrap:wrap;gap:3px}
+  .mai-chips .chip{padding:2.5px 7px;font-size:11px;border-radius:10px;border-width:1px}
+  .abd-block{background:#fafafa;border:1px solid #f0f0f3;border-radius:10px;padding:9px 11px;margin-bottom:8px}
+  .abd-head{font-size:13.5px;font-weight:500;margin-bottom:7px;color:#333}
+  .abd-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+  .abd-ref{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ref-check{display:flex;align-items:center;gap:5px;font-size:12.5px;color:#666;flex:0 0 auto}
+  .ref-check input{width:16px;height:16px;margin:0}
+  .ref-text{flex:1;min-width:110px;border:1px solid #e2e2e7;border-radius:7px;
+    padding:5px 9px;font-size:13px;font-family:inherit;background:#fff}
+  .ref-text:focus{outline:none;border-color:#999}
+  .overall-textarea{width:100%;border:1px solid #ddd;border-radius:9px;
+    padding:10px 11px;font-size:14px;font-family:inherit;background:#fafafa;
+    color:#111;resize:vertical;min-height:64px;line-height:1.5}
+  .overall-textarea:focus{outline:none;border-color:#999;background:#fff}
+  .img-upload{display:block;width:100%;padding:11px;border:1px dashed #c8c8d0;border-radius:9px;
+    background:#fafafa;text-align:center;font-size:13.5px;color:#3a6ea5;cursor:pointer;font-family:inherit}
+  .img-upload:active{background:#f0f0f3}
+  #imagePreview{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .img-thumb{position:relative;width:74px;height:74px;border-radius:8px;overflow:hidden;background:#f0f0f3}
+  .img-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .img-del{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:10px;
+    border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:1;padding:0;font-family:inherit}
+  .img-empty{color:#b0b0b8;font-size:13px;padding:4px 0}
+  .detail-section{margin-bottom:16px}
+  .detail-title{font-size:12.5px;color:#8e8e93;margin-bottom:8px;font-weight:500;
+    border-bottom:1px solid #f2f2f7;padding-bottom:5px}
+  .detail-text{font-size:14px;color:#222;background:#f7f7fa;border-radius:8px;
+    padding:9px 11px;white-space:pre-wrap;word-break:break-word}
+  .detail-text.bold{font-weight:600}
+  .detail-row{display:flex;justify-content:space-between;gap:14px;padding:7px 0;
+    border-bottom:1px solid #f2f2f7;font-size:14px}
+  .detail-row:last-child{border-bottom:0}
+  .detail-row .k{color:#8e8e93;flex:0 0 auto}
+  .detail-row .v{text-align:right;color:#111;word-break:break-word}
+  .detail-row .v.left{text-align:left;flex:1}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}
+  .detail-cell{display:flex;gap:6px;font-size:13px;padding:3px 0;align-items:flex-start;min-width:0}
+  .detail-cell .k{flex:0 0 56px;color:#8e8e93;font-size:12.5px;line-height:1.6}
+  .detail-cell .v{flex:1;min-width:0;color:#1c1c1e;line-height:1.6;word-break:break-word}
+  .detail-cell .v.blue{color:#2f6bb0}
+  .mai-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mai-detail-side{background:#fafafa;border:1px solid #f0f0f3;border-radius:10px;
+    padding:8px 10px;min-width:0;box-sizing:border-box}
+  .mai-detail-side-title{font-size:12.5px;font-weight:600;color:#333;
+    margin-bottom:6px;text-align:center;padding-bottom:5px;
+    border-bottom:1px solid #f0f0f3}
+  .mai-detail-row{display:flex;gap:6px;padding:4px 0;font-size:13px;
+    border-bottom:1px solid #f5f5f8}
+  .mai-detail-row:last-child{border-bottom:0}
+  .mai-detail-row .k{flex:0 0 22px;color:#8e8e93;font-size:12.5px;line-height:1.6}
+  .mai-detail-row .v{flex:1;min-width:0;color:#2f6bb0;line-height:1.6;word-break:break-word}
+  .mai-empty{color:#b0b0b8;font-size:12.5px;text-align:center;padding:4px 0}
+  .ref-note{color:#b06f1a;font-size:12.5px;display:block;margin-top:2px}
+  .none{color:#b0b0b8;font-size:13px}
+  .img-grid{display:flex;flex-wrap:wrap;gap:6px}
+  .img-cell{width:calc(33.33% - 4px);aspect-ratio:1;border-radius:8px;overflow:hidden;background:#f0f0f3}
+  .img-cell img{width:100%;height:100%;object-fit:cover;display:block}
+  @media (max-width:420px){.detail-grid{gap:6px 10px}
+    .detail-cell .k{flex:0 0 50px;font-size:12px}.detail-cell{font-size:12.5px}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-row">
+    <h1>问诊记录</h1>
+    <div class="top-actions">
+      <button class="icon-btn" onclick="exportData()">导出</button>
+      <button class="icon-btn" onclick="importData()">导入</button>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <input type="search" id="searchInput" placeholder="搜索患者姓名" oninput="render()" autocomplete="off">
+  </div>
+  <div class="stats">
+    <div class="stat"><span class="label">记录数</span><b id="sTotal">0</b></div>
+    <div class="stat"><span class="label">初诊</span><b id="sChu">0</b></div>
+    <div class="stat"><span class="label">复诊</span><b id="sFu">0</b></div>
+  </div>
+</header>
+
+<main id="list"></main>
+
+<button class="fab" onclick="openForm()">+</button>
+
+<div class="modal" id="formModal">
+  <div class="sheet">
+    <div class="sheet-head">
+      <b id="formTitle">新增问诊</b>
+      <button class="close" onclick="closeForm()">✕</button>
+    </div>
+    <div class="sheet-body">
+
+      <div class="form-section">
+        <div class="form-section-title">基本信息</div>
+        <div class="field">
+          <label>姓名</label>
+          <input type="text" id="fName" placeholder="患者姓名" autocomplete="off">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>年龄</label>
+            <input type="number" id="fAge" inputmode="numeric" placeholder="岁">
+          </div>
+          <div class="field">
+            <label>性别</label>
+            <div class="seg" id="fSex">
+              <button type="button" class="seg-btn active" data-val="male">男</button>
+              <button type="button" class="seg-btn" data-val="female">女</button>
+            </div>
+          </div>
+        </div>
+        <div class="q-item">
+          <div class="q-label">出生日期</div>
+          <div class="seg" id="fBirthType" style="margin-bottom:8px">
+            <button type="button" class="seg-btn active" data-val="solar">阳历</button>
+            <button type="button" class="seg-btn" data-val="lunar">农历</button>
+          </div>
+          <div class="date-wheel">
+            <select id="fBirthY"></select>
+            <select id="fBirthM"></select>
+            <select id="fBirthD"></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>就诊时间</label>
+          <input type="datetime-local" id="fTime">
+        </div>
+        <div class="q-item">
+          <div class="q-label">是否开药</div>
+          <div class="seg" id="fMed">
+            <button type="button" class="seg-btn active" data-val="no">否</button>
+            <button type="button" class="seg-btn" data-val="yes">是</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">病史</div>
+        <div class="q-item">
+          <div class="q-label">是否手术</div>
+          <div class="seg" id="fSurgery">
+            <button type="button" class="seg-btn" data-val="no">否</button>
+            <button type="button" class="seg-btn" data-val="yes">是</button>
+          </div>
+          <div class="q-extra" id="surgeryCountWrap" style="display:none">
+            <input type="text" id="fSurgeryNote" placeholder="备注">
+          </div>
+        </div>
+        <div class="q-item">
+          <div class="q-label">是否服用西药</div>
+          <div class="seg" id="fWestMed">
+            <button type="button" class="seg-btn active" data-val="no">否</button>
+            <button type="button" class="seg-btn" data-val="yes">是</button>
+          </div>
+          <div class="q-extra" id="westMedWrap" style="display:none">
+            <input type="text" id="fWestMedType" placeholder="西药种类">
+            <input type="text" id="fWestMedTime" placeholder="服用时间">
+          </div>
+        </div>
+        <div class="q-item">
+          <div class="q-label">是否打过疫苗</div>
+          <div class="seg" id="fVaccine">
+            <button type="button" class="seg-btn active" data-val="no">否</button>
+            <button type="button" class="seg-btn" data-val="yes">是</button>
+          </div>
+          <div class="q-extra" id="vaccineCountWrap" style="display:none">
+            <label>针数</label>
+            <input type="number" id="fVaccineCount" inputmode="numeric" min="0" placeholder="几针">
+          </div>
+        </div>
+        <div class="q-item">
+          <div class="q-label">有无基础病</div>
+          <div class="seg" id="fBase">
+            <button type="button" class="seg-btn" data-val="no">无</button>
+            <button type="button" class="seg-btn" data-val="yes">有</button>
+          </div>
+          <div class="q-extra" id="baseNoteWrap" style="display:none">
+            <input type="text" id="fBaseNote" placeholder="基础病详情">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">主要问题自述</div>
+        <div class="field">
+          <input type="text" id="fMainIssue" placeholder="患者自述的主要问题" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">问诊</div>
+        <div id="qWrap"></div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">脉诊情况（左/右两列）</div>
+        <div id="maiWrap"></div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">腹诊</div>
+        <div id="fAbdomen"></div>
+        <div class="q-item" style="margin-top:12px">
+          <div class="q-label">整体腹部触诊判断</div>
+          <textarea id="fAbdOverall" class="overall-textarea"
+                    placeholder="自行填写整体判断" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">舌苔情况</div>
+        <div id="sheWrap"></div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">舌苔照片（最多 9 张）</div>
+        <input type="file" id="fImages" accept="image/*" multiple class="img-upload">
+        <div id="imagePreview"></div>
+      </div>
+
+    </div>
+    <div class="sheet-foot">
+      <button class="btn btn-secondary" onclick="closeForm()">取消</button>
+      <button class="btn btn-primary" onclick="saveForm()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="detailModal">
+  <div class="sheet">
+    <div class="sheet-head">
+      <b>问诊详情</b>
+      <button class="close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="sheet-body" id="detailBody"></div>
+    <div class="sheet-foot column" id="detailFoot"></div>
+  </div>
+</div>
+
+<script>
+/* ================= 常量 ================= */
+const KEY = 'wenzhen_records_v1';
+
+const OPT_KOU   = ['口干','口苦','口腻','口气','口涩','口淡'];
+const OPT_SHUI  = ['渴不欲饮','喜热','喜冷','喜温','口渴','不渴','喝水不解渴','喝水想吐'];
+const OPT_HAN   = ['有汗','无汗','冷汗','汗多','汗少','盗汗','自汗'];
+const OPT_HANW  = ['头面','前胸','后背','四肢'];
+const OPT_SJ    = ['手脚冷','手脚心热'];
+const OPT_HR    = ['怕热','怕冷','怕风'];
+const OPT_SM    = ['入睡难','梦多','白天困乏想睡'];
+const OPT_WK    = ['不饿','不想吃','吃完胃胀或腹胀','反酸','烧心','饥不欲食','嗳气','打嗝','一般','纳差'];
+const OPT_DB    = ['有','成型','不成型','粘马桶','散','有异味','难上','顽固不化'];
+const OPT_XB    = ['小便黄','小便淋漓','浑浊','泡沫','尿频','有异味'];
+const OPT_LJ    = ['量多','量少','颜色深','有血块','痛经','腰酸腰疼','小腹坠胀','头晕','白带','有异味'];
+
+const OPT_SHE_ZHI   = ['淡红','红','淡白','紫暗','有瘀点','有瘀斑','舌尖红','边红'];
+const OPT_SHE_TAI   = ['薄白','白腻','黄腻','厚腻','少苔','无苔','剥落','地图舌','黑苔'];
+const OPT_SHE_XING  = ['胖大','瘦小','齿痕','裂纹','芒刺','颤动','歪斜','正常'];
+const OPT_SHE_XIA   = ['正常','青紫','迂曲','怒张'];
+const OPT_SHE_JIN   = ['润','少津','干燥','水滑'];
+
+const MAI_OPTS  = ['有力','无力','稍弱','弱','浮','微浮','沉','弦','紧','濡','缓','数','结代','越关','肺结节','情志','颈椎'];
+const MAI_SIDES = [{key:'left',label:'左手'},{key:'right',label:'右手'}];
+const MAI_POS   = [{key:'cun',label:'寸'},{key:'guan',label:'关'},{key:'chi',label:'尺'}];
+
+const ABD_AREAS = [
+  {key:'jianTu',   label:'剑突'},{key:'zhongWan', label:'中脘'},
+  {key:'duQi',     label:'肚脐'},{key:'duQiL',    label:'肚脐左'},
+  {key:'duQiR',    label:'肚脐右'},{key:'guanYuan', label:'关元'},
+  {key:'fuGouL',   label:'左腹股沟'},{key:'fuGouR',   label:'右腹股沟'},
+  {key:'leiGuL',   label:'左肋骨'},{key:'leiGuR',   label:'右肋骨'}
+];
+const ABD_FINDINGS = ['痛','酸','奔豚','硬','凉','有条索','硬块','涨'];
+
+const Q_GROUPS = [
+  {key:'kouGan',   label:'口干口苦', options:OPT_KOU},
+  {key:'heShui',   label:'喝水情况', options:OPT_SHUI},
+  {key:'chuHan',   label:'出汗情况', options:OPT_HAN},
+  {key:'hanWhere', label:'汗多处',   options:OPT_HANW},
+  {key:'shouJiao', label:'手脚冷热', options:OPT_SJ},
+  {key:'hanRe',    label:'寒热情况', options:OPT_HR},
+  {key:'shuiMian', label:'睡眠情况', options:OPT_SM},
+  {key:'weiKou',   label:'胃口情况', options:OPT_WK},
+  {key:'daBian',   label:'大便情况', options:OPT_DB},
+  {key:'xiaoBian', label:'小便情况', options:OPT_XB},
+  {key:'liJia',    label:'例假情况', options:OPT_LJ}
+];
+
+const SHE_GROUPS = [
+  {key:'sheZhi',  label:'舌质', options:OPT_SHE_ZHI},
+  {key:'sheTai',  label:'舌苔', options:OPT_SHE_TAI},
+  {key:'sheXing', label:'舌形', options:OPT_SHE_XING},
+  {key:'sheXia',  label:'舌下', options:OPT_SHE_XIA},
+  {key:'sheJin',  label:'津液', options:OPT_SHE_JIN}
+];
+
+/* ================= 图片存储 ================= */
+const IMG_DB = 'wenzhen_img_db';
+const IMG_STORE = 'images';
+function openImgDB(){
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IMG_DB, 1);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(IMG_STORE))
+        db.createObjectStore(IMG_STORE, {keyPath: 'id'});
+    };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+async function imgPut(id, dataUrl){
+  const db = await openImgDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IMG_STORE, 'readwrite');
+    tx.objectStore(IMG_STORE).put({id, dataUrl});
+    tx.oncomplete = () => resolve();
+    tx.onerror = e => reject(e.target.error);
+  });
+}
+async function imgGet(id){
+  const db = await openImgDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IMG_STORE, 'readonly');
+    const req = tx.objectStore(IMG_STORE).get(id);
+    req.onsuccess = e => resolve(e.target.result ? e.target.result.dataUrl : null);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+async function imgDel(id){
+  const db = await openImgDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IMG_STORE, 'readwrite');
+    tx.objectStore(IMG_STORE).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = e => reject(e.target.error);
+  });
+}
+function compressImage(file, maxW, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxW){ h = Math.round(h * maxW / w); w = maxW; }
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(cv.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ================= 存储 ================= */
+function loadRecords(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    const d = raw ? JSON.parse(raw) : [];
+    return Array.isArray(d) ? d : [];
+  }catch(e){ return []; }
+}
+function saveRecords(){
+  try{ localStorage.setItem(KEY, JSON.stringify(records)); return true; }
+  catch(e){ alert('保存失败：本地存储不可用或已满。'); return false; }
+}
+let records = loadRecords();
+let editingId = null;
+let detailId = null;
+let editingVisitNo = 0;
+let currentImages = [];
+let todayExpanded = false;
+
+/* ================= 工具 ================= */
+function pad(n){ return String(n).padStart(2,'0'); }
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function nowLocal(){
+  const d = new Date();
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+}
+function todayDateStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+}
+function fmtDateTime(s){
+  if (!s) return '—';
+  const p = s.split('T');
+  if (p.length !== 2) return s;
+  return p[0] + ' ' + p[1];
+}
+function dateOnly(s){ return (s || '').split('T')[0]; }
+function formatDateHead(d){
+  if (!d) return '未知日期';
+  const p = d.split('-');
+  if (p.length !== 3) return d;
+  const dt = new Date(+p[0], +p[1]-1, +p[2]);
+  const wk = ['日','一','二','三','四','五','六'][dt.getDay()];
+  return (+p[1]) + '月' + (+p[2]) + '日 周' + wk;
+}
+function getSegVal(id){
+  const a = document.querySelector('#'+id+' .seg-btn.active');
+  return a ? a.dataset.val : '';
+}
+function setSeg(id, val){
+  document.querySelectorAll('#'+id+' .seg-btn').forEach(b=>{
+    b.classList.toggle('active', String(b.dataset.val) === String(val));
+  });
+}
+function displayName(r){
+  if (r.visitNo && r.visitNo > 0){
+    const d = (r.time || '').split('T')[0].split('-');
+    const md = d.length === 3 ? (parseInt(d[1],10) + '月' + parseInt(d[2],10) + '日') : '';
+    return r.name + '复诊' + r.visitNo + (md ? ' ' + md : '');
+  }
+  return r.name || '';
+}
+function newAbdomen(){
+  const o = {};
+  ABD_AREAS.forEach(a => o[a.key] = {findings:[], referred:false, referredText:''});
+  return o;
+}
+function newMai(){
+  const o = {};
+  MAI_SIDES.forEach(s => { o[s.key] = {}; MAI_POS.forEach(p => o[s.key][p.key] = []); });
+  return o;
+}
+
+/* ================= 出生日期滚轮 ================= */
+function initBirthSelects(){
+  const ySel = document.getElementById('fBirthY');
+  const mSel = document.getElementById('fBirthM');
+  const dSel = document.getElementById('fBirthD');
+
+  if (ySel.options.length === 0){
+    let o = document.createElement('option');
+    o.value = ''; o.textContent = '年'; ySel.appendChild(o);
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear; y >= 1930; y--){
+      o = document.createElement('option');
+      o.value = y; o.textContent = y + '年';
+      ySel.appendChild(o);
+    }
+    o = document.createElement('option');
+    o.value = ''; o.textContent = '月'; mSel.appendChild(o);
+    for (let m = 1; m <= 12; m++){
+      o = document.createElement('option');
+      o.value = m; o.textContent = m + '月';
+      mSel.appendChild(o);
+    }
+    o = document.createElement('option');
+    o.value = ''; o.textContent = '日'; dSel.appendChild(o);
+    for (let d = 1; d <= 31; d++){
+      o = document.createElement('option');
+      o.value = d; o.textContent = d + '日';
+      dSel.appendChild(o);
+    }
+  }
+}
+
+function setBirthSelects(birthDate){
+  initBirthSelects();
+  const ySel = document.getElementById('fBirthY');
+  const mSel = document.getElementById('fBirthM');
+  const dSel = document.getElementById('fBirthD');
+  if (birthDate && birthDate.length === 10){
+    const p = birthDate.split('-');
+    ySel.value = String(+p[0] || '');
+    mSel.value = String(+p[1] || '');
+    dSel.value = String(+p[2] || '');
+  } else {
+    ySel.value = '';
+    mSel.value = '';
+    dSel.value = '';
+  }
+}
+
+function getBirthDateFromSelects(){
+  const y = document.getElementById('fBirthY').value;
+  const m = document.getElementById('fBirthM').value;
+  const d = document.getElementById('fBirthD').value;
+  if (!y || !m || !d) return '';
+  return y + '-' + pad(+m) + '-' + pad(+d);
+}
+
+/* ================= 今日开药 ================= */
+function getTodayMedList(){
+  const today = todayDateStr();
+  const list = records.filter(r => r.needMedicine === true && dateOnly(r.time) === today);
+  list.sort((a,b) => (b.time || '').localeCompare(a.time || ''));
+  return list;
+}
+function toggleToday(){
+  todayExpanded = !todayExpanded;
+  const card = document.getElementById('todayCard');
+  if (card) card.classList.toggle('open', todayExpanded);
+}
+function renderTodayHtml(){
+  const list = getTodayMedList();
+  if (!list.length) return '';
+  let html = '<div class="today-card' + (todayExpanded ? ' open' : '') + '" id="todayCard">';
+  html += '<div class="today-head" onclick="toggleToday()">';
+  html += '<span class="today-title">今日开药</span>';
+  html += '<span class="today-count">' + list.length + '</span>';
+  html += '<span class="today-hint">' + (todayExpanded ? '点击收起' : '点击展开') + '</span>';
+  html += '<span class="today-arrow">▾</span></div>';
+  html += '<div class="today-list">';
+  list.forEach(r => {
+    html += '<span class="today-name" onclick="event.stopPropagation();openDetail(' + r.id + ')">' +
+            esc(r.name || '未填') + '</span>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+/* ================= 动态问诊表单 ================= */
+function buildQForm(){
+  const wrap = document.getElementById('qWrap');
+  wrap.innerHTML = Q_GROUPS.map(g => {
+    let extra = '';
+    if (g.key === 'shouJiao'){
+      extra = '<div class="q-extra">' +
+        '<label><input type="checkbox" id="fGuoXi"> 手脚冷过膝</label>' +
+        '<label><input type="checkbox" id="fShouJiaoHan"> 手脚心有汗</label></div>';
+    } else if (g.key === 'shuiMian'){
+      extra = '<div class="q-extra">' +
+        '<label><input type="checkbox" id="fBanYeXing"> 半夜会醒</label>' +
+        '<label><input type="checkbox" id="fXingHouNanShui"> 醒后难入睡</label></div>';
+    } else if (g.key === 'daBian'){
+      extra = '<div class="q-extra"><label>便秘几日</label>' +
+        '<input type="number" id="fBianMi" inputmode="numeric" min="0" placeholder="天数"></div>';
+    } else if (g.key === 'xiaoBian'){
+      extra = '<div class="q-extra"><label>起夜次数</label>' +
+        '<input type="number" id="fQiYe" inputmode="numeric" min="0" placeholder="次"></div>';
+    } else if (g.key === 'liJia'){
+      extra = '<div class="q-extra"><label>准时</label>' +
+        '<div class="seg" id="fZhunShi" style="flex:0 0 auto;min-width:120px">' +
+        '<button type="button" class="seg-btn" data-val="yes">是</button>' +
+        '<button type="button" class="seg-btn" data-val="no">否</button></div>' +
+        '<input type="text" id="fTuiQian" placeholder="几日推迟/提前" style="flex:1"></div>';
+    }
+    if (g.key === 'chuHan'){
+      return '<div class="q-item">' +
+        '<div class="q-label">' + g.label + '</div>' +
+        '<div class="q-chips" data-chips="' + g.key + '"></div>' +
+        '<input type="text" class="other-input" data-other-for="' + g.key + '" placeholder="其他：请填写" style="display:none">' +
+        '<div style="margin-top:9px">' +
+          '<div class="q-label" style="font-weight:400;color:#666;font-size:12.5px;margin-bottom:5px">汗多处在何处</div>' +
+          '<div class="q-chips" data-chips="hanWhere"></div>' +
+          '<input type="text" class="other-input" data-other-for="hanWhere" placeholder="其他：请填写" style="display:none">' +
+        '</div></div>';
+    }
+    if (g.key === 'hanWhere') return '';
+    return '<div class="q-item">' +
+      '<div class="q-label">' + g.label + '</div>' +
+      '<div class="q-chips" data-chips="' + g.key + '"></div>' +
+      '<input type="text" class="other-input" data-other-for="' + g.key + '" placeholder="其他：请填写" style="display:none">' +
+      extra + '</div>';
+  }).join('');
+}
+function buildSheForm(){
+  const wrap = document.getElementById('sheWrap');
+  wrap.innerHTML = SHE_GROUPS.map(g =>
+    '<div class="q-item"><div class="q-label">' + g.label + '</div>' +
+    '<div class="q-chips" data-chips="' + g.key + '"></div>' +
+    '<input type="text" class="other-input" data-other-for="' + g.key + '" placeholder="其他：请填写" style="display:none">' +
+    '</div>'
+  ).join('');
+}
+
+/* ================= chips ================= */
+function renderChipsFor(key, options, selected, otherText){
+  const box = document.querySelector('[data-chips="'+key+'"]');
+  if (!box) return;
+  const sel = selected || [];
+  let html = options.map(o =>
+    '<button type="button" class="chip' + (sel.indexOf(o) >= 0 ? ' active' : '') +
+    '" data-v="' + esc(o) + '">' + esc(o) + '</button>'
+  ).join('');
+  html += '<button type="button" class="chip chip-other' + (otherText ? ' active' : '') +
+          '" data-other="1">其他</button>';
+  box.innerHTML = html;
+  const input = document.querySelector('[data-other-for="'+key+'"]');
+  if (input){ input.value = otherText || ''; input.style.display = otherText ? '' : 'none'; }
+}
+function initAllChips(src){
+  const r = src || {};
+  Q_GROUPS.concat(SHE_GROUPS).forEach(g => {
+    renderChipsFor(g.key, g.options, r[g.key], r[g.key + 'Other']);
+  });
+}
+function collectChips(key){
+  const box = document.querySelector('[data-chips="'+key+'"]');
+  if (!box) return [];
+  return Array.from(box.querySelectorAll('.chip.active'))
+    .filter(c => !c.dataset.other).map(c => c.dataset.v);
+}
+function collectOther(key){
+  const input = document.querySelector('[data-other-for="'+key+'"]');
+  return input ? input.value.trim() : '';
+}
+
+/* ================= 脉诊表单 ================= */
+function buildMaiForm(data){
+  const wrap = document.getElementById('maiWrap');
+  const d = data || newMai();
+
+  let html = '<div class="mai-grid">';
+  MAI_SIDES.forEach(side => {
+    html += '<div class="mai-side">';
+    html += '<div class="mai-side-title">' + side.label + '</div>';
+    MAI_POS.forEach(pos => {
+      const sel = (d[side.key] && d[side.key][pos.key]) || [];
+      html += '<div class="mai-pos">';
+      html += '<div class="mai-pos-label">' + pos.label + '</div>';
+      html += '<div class="mai-chips" data-mai="' + side.key + '-' + pos.key + '">';
+      html += MAI_OPTS.map(o =>
+        '<button type="button" class="chip' + (sel.indexOf(o) >= 0 ? ' active' : '') +
+        '" data-v="' + esc(o) + '">' + esc(o) + '</button>'
+      ).join('');
+      html += '</div></div>';
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+function collectMai(){
+  const out = {};
+  MAI_SIDES.forEach(s => {
+    out[s.key] = {};
+    MAI_POS.forEach(p => {
+      const box = document.querySelector('[data-mai="' + s.key + '-' + p.key + '"]');
+      out[s.key][p.key] = box ? Array.from(box.querySelectorAll('.chip.active')).map(c => c.dataset.v) : [];
+    });
+  });
+  return out;
+}
+
+/* ================= 腹诊 ================= */
+function buildAbdForm(data){
+  const wrap = document.getElementById('fAbdomen');
+  wrap.innerHTML = '';
+  const d = data || newAbdomen();
+  ABD_AREAS.forEach(a => {
+    const v = d[a.key] || {findings:[], referred:false, referredText:''};
+    const block = document.createElement('div');
+    block.className = 'abd-block';
+    let html = '<div class="abd-head">' + a.label + '</div>';
+    html += '<div class="abd-chips">';
+    ABD_FINDINGS.forEach(f => {
+      const on = (v.findings || []).indexOf(f) >= 0;
+      html += '<button type="button" class="chip' + (on?' active':'') +
+              '" data-area="' + a.key + '" data-f="' + f + '">' + f + '</button>';
+    });
+    html += '</div><div class="abd-ref">';
+    html += '<label class="ref-check"><input type="checkbox" data-area="' + a.key +
+            '" data-role="referred"' + (v.referred?' checked':'') + '> 牵扯</label>';
+    html += '<input type="text" class="ref-text" data-area="' + a.key +
+            '" data-role="referredText" placeholder="牵扯到哪个部位" value="' +
+            esc(v.referredText || '') + '">';
+    html += '</div>';
+    block.innerHTML = html;
+    wrap.appendChild(block);
+  });
+}
+function collectAbdomen(){
+  const out = {};
+  ABD_AREAS.forEach(a => {
+    const findings = [];
+    document.querySelectorAll('#fAbdomen .chip.active[data-area="'+a.key+'"]')
+      .forEach(c => findings.push(c.dataset.f));
+    const cb = document.querySelector('#fAbdomen input[data-area="'+a.key+'"][data-role="referred"]');
+    const tx = document.querySelector('#fAbdomen input[data-area="'+a.key+'"][data-role="referredText"]');
+    out[a.key] = {
+      findings: findings,
+      referred: cb ? cb.checked : false,
+      referredText: tx ? tx.value.trim() : ''
+    };
+  });
+  return out;
+}
+
+/* ================= 图片预览 ================= */
+function renderImagePreview(){
+  const box = document.getElementById('imagePreview');
+  if (!box) return;
+  box.innerHTML = '';
+  if (!currentImages.length){ box.innerHTML = '<div class="img-empty">暂无图片</div>'; return; }
+  currentImages.forEach((img, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'img-thumb';
+    const im = document.createElement('img');
+    im.dataset.imgid = img.id;
+    wrap.appendChild(im);
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'img-del';
+    del.textContent = '×';
+    del.dataset.delimg = i;
+    wrap.appendChild(del);
+    box.appendChild(wrap);
+    imgGet(img.id).then(url => { if (url) im.src = url; });
+  });
+}
+
+/* ================= 渲染列表 ================= */
+function render(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  let list = records.slice();
+  if (q) list = list.filter(r => (r.name || '').toLowerCase().indexOf(q) >= 0);
+  list.sort((a,b) => (b.time || '').localeCompare(a.time || ''));
+  let chu = 0, fu = 0;
+  list.forEach(r => { if (r.visitNo > 0) fu++; else chu++; });
+  document.getElementById('sTotal').textContent = list.length;
+  document.getElementById('sChu').textContent = chu;
+  document.getElementById('sFu').textContent = fu;
+  const box = document.getElementById('list');
+  let html = renderTodayHtml();
+  if (!list.length){
+    html += '<div class="empty">' + (q ? '没有找到该患者' : '还没有问诊记录<br>点右下角 + 添加') + '</div>';
+    box.innerHTML = html;
+    return;
+  }
+  const groups = {};
+  list.forEach(r => {
+    const d = dateOnly(r.time) || '未知';
+    (groups[d] = groups[d] || []).push(r);
+  });
+  const dates = Object.keys(groups).sort((a,b) => b.localeCompare(a));
+  dates.forEach(d => {
+    const items = groups[d];
+    html += '<section class="day-group">';
+    html += '<div class="day-head"><span>' + esc(formatDateHead(d)) +
+            '</span><span>' + items.length + ' 人</span></div>';
+    items.forEach(r => {
+      const isMale = r.sex !== 'female';
+      const isReturn = r.visitNo > 0;
+      const tags = [];
+      if (r.surgery === 'yes') tags.push('<span class="tag warn">手术' + (r.surgeryNote ? '：' + esc(r.surgeryNote) : '') + '</span>');
+      if (r.westMedicine === 'yes') tags.push('<span class="tag warn">西药</span>');
+      if (r.vaccine === 'yes') tags.push('<span class="tag warn">疫苗' + (r.vaccineCount ? r.vaccineCount + '针' : '') + '</span>');
+      if (r.baseDisease === 'yes') tags.push('<span class="tag warn">基础病</span>');
+      let abdCount = 0;
+      if (r.abdomen){
+        Object.keys(r.abdomen).forEach(k => {
+          const v = r.abdomen[k];
+          if (v && ((v.findings && v.findings.length) || v.referred)) abdCount++;
+        });
+      }
+      if (abdCount) tags.push('<span class="tag muted">腹诊 ' + abdCount + ' 项</span>');
+      let maiCount = 0;
+      if (r.mai){
+        MAI_SIDES.forEach(s => MAI_POS.forEach(p => {
+          if (r.mai[s.key] && r.mai[s.key][p.key] && r.mai[s.key][p.key].length) maiCount++;
+        }));
+      }
+      if (maiCount) tags.push('<span class="tag muted">脉诊 ' + maiCount + ' 部</span>');
+      let sheCount = 0;
+      ['sheZhi','sheTai','sheXing','sheXia','sheJin'].forEach(k => {
+        if ((r[k] && r[k].length) || r[k + 'Other']) sheCount++;
+      });
+      if (sheCount) tags.push('<span class="tag muted">舌苔 ' + sheCount + ' 项</span>');
+      if (r.images && r.images.length) tags.push('<span class="tag muted">图 ' + r.images.length + '</span>');
+      html += '<article class="rec" onclick="openDetail(' + r.id + ')">';
+      html += '<div class="rec-top">';
+      html += '<span class="rec-name">' + esc(displayName(r)) + '</span>';
+      html += '<span class="badge ' + (isMale?'male':'female') + '">' + (isMale?'男':'女') + '</span>';
+      if (r.age) html += '<span class="badge" style="background:#f0f0f3;color:#666">' + r.age + '岁</span>';
+      html += '<span class="badge ' + (isReturn?'return':'first') + '">' + (isReturn?'复诊':'初诊') + '</span>';
+      if (r.needMedicine === true) html += '<span class="badge med">开药</span>';
+      html += '<span class="rec-time">' + esc(fmtDateTime(r.time)) + '</span>';
+      html += '</div>';
+      if (r.mainIssue) html += '<div class="rec-issue">' + esc(r.mainIssue) + '</div>';
+      html += '<div class="rec-tags">' + (tags.join('') || '<span class="tag muted">暂无标记</span>') + '</div>';
+      html += '</article>';
+    });
+    html += '</section>';
+  });
+  box.innerHTML = html;
+}
+
+/* ================= 表单打开 ================= */
+function openForm(record, opts){
+  opts = opts || {};
+  const isFollowUp = !!opts.followUp;
+  editingId = (record && !isFollowUp) ? record.id : null;
+  editingVisitNo = isFollowUp ? (opts.nextVisitNo || 1) : (record ? (record.visitNo || 0) : 0);
+  const title = isFollowUp ? '复诊记录 · 第' + editingVisitNo + '次'
+                           : (record ? '编辑问诊' : '新增问诊');
+  document.getElementById('formTitle').textContent = title;
+  const src = record || null;
+
+  initBirthSelects();
+
+  if (src){
+    document.getElementById('fName').value = src.name || '';
+    document.getElementById('fAge').value  = src.age || '';
+    setBirthSelects(src.birthDate || '');
+    setSeg('fBirthType', src.birthType || 'solar');
+    document.getElementById('fTime').value = isFollowUp ? nowLocal() : (src.time || nowLocal());
+    setSeg('fSex', src.sex || 'male');
+    setSeg('fMed', src.needMedicine === true ? 'yes' : 'no');
+    setSeg('fSurgery', src.surgery || 'no');
+    document.getElementById('fSurgeryNote').value = src.surgeryNote || (src.surgeryCount ? String(src.surgeryCount) + '次' : '');
+    setSeg('fWestMed', src.westMedicine || 'no');
+    document.getElementById('fWestMedType').value = src.westMedicineType || '';
+    document.getElementById('fWestMedTime').value = src.westMedicineTime || '';
+    setSeg('fVaccine', src.vaccine || 'no');
+    document.getElementById('fVaccineCount').value = src.vaccineCount || '';
+    setSeg('fBase', src.baseDisease || 'no');
+    document.getElementById('fBaseNote').value = src.baseNote || '';
+    document.getElementById('fMainIssue').value = src.mainIssue || '';
+    document.getElementById('fGuoXi').checked = !!src.guoXi;
+    document.getElementById('fShouJiaoHan').checked = !!src.shouJiaoHan;
+    document.getElementById('fBanYeXing').checked = !!src.banYeXing;
+    document.getElementById('fXingHouNanShui').checked = !!src.xingHouNanShui;
+    document.getElementById('fBianMi').value = src.bianMi || '';
+    document.getElementById('fQiYe').value = src.qiYe || '';
+    setSeg('fZhunShi', src.zhunShi || '');
+    document.getElementById('fTuiQian').value = src.tuiQian || '';
+    document.getElementById('fAbdOverall').value = src.abdOverall || '';
+    initAllChips(src);
+    buildMaiForm(src.mai || null);
+    buildAbdForm(src.abdomen || null);
+  } else {
+    document.getElementById('fName').value = '';
+    document.getElementById('fAge').value  = '';
+    setBirthSelects('');
+    setSeg('fBirthType', 'solar');
+    document.getElementById('fTime').value = nowLocal();
+    setSeg('fSex', 'male');
+    setSeg('fMed', 'no');
+    setSeg('fSurgery', 'no');
+    document.getElementById('fSurgeryNote').value = '';
+    setSeg('fWestMed', 'no');
+    document.getElementById('fWestMedType').value = '';
+    document.getElementById('fWestMedTime').value = '';
+    setSeg('fVaccine', 'no');
+    document.getElementById('fVaccineCount').value = '';
+    setSeg('fBase', 'no');
+    document.getElementById('fBaseNote').value = '';
+    document.getElementById('fMainIssue').value = '';
+    document.getElementById('fGuoXi').checked = false;
+    document.getElementById('fShouJiaoHan').checked = false;
+    document.getElementById('fBanYeXing').checked = false;
+    document.getElementById('fXingHouNanShui').checked = false;
+    document.getElementById('fBianMi').value = '';
+    document.getElementById('fQiYe').value = '';
+    setSeg('fZhunShi', '');
+    document.getElementById('fTuiQian').value = '';
+    document.getElementById('fAbdOverall').value = '';
+    initAllChips(null);
+    buildMaiForm(null);
+    buildAbdForm(null);
+  }
+  if (isFollowUp){ currentImages = []; }
+  else { currentImages = (src && src.images) ? src.images.slice() : []; }
+  renderImagePreview();
+  toggleSurgery(); toggleWestMed(); toggleVaccine(); toggleBase();
+  document.getElementById('formModal').classList.add('open');
+  document.body.classList.add('locked');
+  if (!src) setTimeout(() => document.getElementById('fName').focus(), 260);
+}
+function toggleSurgery(){
+  const on = getSegVal('fSurgery') === 'yes';
+  document.getElementById('surgeryCountWrap').style.display = on ? '' : 'none';
+}
+function toggleWestMed(){
+  const on = getSegVal('fWestMed') === 'yes';
+  document.getElementById('westMedWrap').style.display = on ? '' : 'none';
+}
+function toggleVaccine(){
+  const on = getSegVal('fVaccine') === 'yes';
+  document.getElementById('vaccineCountWrap').style.display = on ? '' : 'none';
+}
+function toggleBase(){
+  const on = getSegVal('fBase') === 'yes';
+  document.getElementById('baseNoteWrap').style.display = on ? '' : 'none';
+}
+function closeForm(){
+  document.getElementById('formModal').classList.remove('open');
+  document.body.classList.remove('locked');
+  editingId = null; editingVisitNo = 0; currentImages = [];
+}
+
+function saveForm(){
+  const name = document.getElementById('fName').value.trim();
+  if (!name){ alert('请填写姓名'); return; }
+  const data = {
+    id: editingId || Date.now(),
+    name: name,
+    visitNo: editingVisitNo,
+    age: +document.getElementById('fAge').value || 0,
+    birthDate: getBirthDateFromSelects(),
+    birthType: getSegVal('fBirthType') || 'solar',
+    sex: getSegVal('fSex') || 'male',
+    time: document.getElementById('fTime').value || nowLocal(),
+    needMedicine: getSegVal('fMed') === 'yes',
+    surgery: getSegVal('fSurgery') || 'no',
+    surgeryNote: document.getElementById('fSurgeryNote').value.trim(),
+    westMedicine: getSegVal('fWestMed') || 'no',
+    westMedicineType: document.getElementById('fWestMedType').value.trim(),
+    westMedicineTime: document.getElementById('fWestMedTime').value.trim(),
+    vaccine: getSegVal('fVaccine') || 'no',
+    vaccineCount: +document.getElementById('fVaccineCount').value || 0,
+    baseDisease: getSegVal('fBase') || 'no',
+    baseNote: document.getElementById('fBaseNote').value.trim(),
+    mainIssue: document.getElementById('fMainIssue').value.trim(),
+    guoXi: !!document.getElementById('fGuoXi').checked,
+    shouJiaoHan: !!document.getElementById('fShouJiaoHan').checked,
+    banYeXing: !!document.getElementById('fBanYeXing').checked,
+    xingHouNanShui: !!document.getElementById('fXingHouNanShui').checked,
+    bianMi: document.getElementById('fBianMi').value,
+    qiYe: document.getElementById('fQiYe').value,
+    zhunShi: getSegVal('fZhunShi') || '',
+    tuiQian: document.getElementById('fTuiQian').value.trim(),
+    mai: collectMai(),
+    abdomen: collectAbdomen(),
+    abdOverall: document.getElementById('fAbdOverall').value.trim(),
+    images: currentImages.slice()
+  };
+  Q_GROUPS.concat(SHE_GROUPS).forEach(g => {
+    data[g.key] = collectChips(g.key);
+    data[g.key + 'Other'] = collectOther(g.key);
+  });
+  if (editingId){
+    const old = records.find(r => r.id === editingId);
+    if (old && old.images){
+      const newIds = new Set(data.images.map(x => x.id));
+      old.images.forEach(img => { if (!newIds.has(img.id)) imgDel(img.id).catch(()=>{}); });
+    }
+    const i = records.findIndex(r => r.id === editingId);
+    if (i >= 0) records[i] = data; else records.push(data);
+  } else {
+    records.push(data);
+  }
+  saveRecords();
+  closeForm();
+  render();
+}
+
+/* ================= 复诊 ================= */
+function makeFollowUp(record){
+  let maxNo = 0;
+  records.forEach(r => { if (r.name === record.name && r.visitNo > maxNo) maxNo = r.visitNo; });
+  const nextNo = maxNo + 1;
+  const d = new Date();
+  const md = (d.getMonth()+1) + '月' + d.getDate() + '日';
+  const newTitle = record.name + '复诊' + nextNo + ' ' + md;
+  if (!confirm('将基于本次记录新建复诊记录：\n\n' + newTitle + '\n\n初诊记录内容保持不变，继续？')) return;
+  closeDetail();
+  setTimeout(() => { openForm(record, { followUp: true, nextVisitNo: nextNo }); }, 80);
+}
+
+/* ================= 详情 ================= */
+function joinQ(arr, otherText, extras){
+  const parts = [];
+  if (arr && arr.length) parts.push(arr.join('、'));
+  if (otherText) parts.push(otherText);
+  if (extras && extras.length) parts.push(extras.join('、'));
+  return parts.join('、');
+}
+function detailCell(label, val){
+  if (!val) return '';
+  return '<div class="detail-cell"><span class="k">' + label +
+    '</span><span class="v blue">' + esc(val) + '</span></div>';
+}
+
+function renderMaiDetail(r){
+  function buildSide(sideKey, sideLabel){
+    let rows = '';
+    MAI_POS.forEach(pos => {
+      const arr = (r.mai && r.mai[sideKey] && r.mai[sideKey][pos.key]) || [];
+      if (arr.length){
+        rows += '<div class="mai-detail-row">' +
+                '<span class="k">' + pos.label + '</span>' +
+                '<span class="v">' + esc(arr.join('、')) + '</span>' +
+                '</div>';
+      }
+    });
+    if (!rows) rows = '<div class="mai-empty">未记录</div>';
+    return '<div class="mai-detail-side">' +
+           '<div class="mai-detail-side-title">' + sideLabel + '</div>' +
+           rows +
+           '</div>';
+  }
+  if (!r.mai) return '<div class="none">未记录脉诊</div>';
+  return '<div class="mai-detail-grid">' +
+         buildSide('left', '左手') +
+         buildSide('right', '右手') +
+         '</div>';
+}
+
+function openDetail(id){
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  detailId = id;
+  const body = document.getElementById('detailBody');
+  let html = '';
+
+  const birthTypeText = r.birthType === 'lunar' ? '农历' : '阳历';
+  const birthText = r.birthDate ? (birthTypeText + ' ' + r.birthDate) : '—';
+
+  html += '<div class="detail-section"><div class="detail-title">基本信息</div>';
+  html += '<div class="detail-row"><span class="k">姓名</span><span class="v">' + esc(r.name) + '</span></div>';
+  html += '<div class="detail-row"><span class="k">年龄</span><span class="v">' + (r.age ? r.age + ' 岁' : '—') + '</span></div>';
+  html += '<div class="detail-row"><span class="k">出生日期</span><span class="v">' + esc(birthText) + '</span></div>';
+  html += '<div class="detail-row"><span class="k">性别</span><span class="v">' + (r.sex === 'female' ? '女' : '男') + '</span></div>';
+  html += '<div class="detail-row"><span class="k">就诊时间</span><span class="v">' + esc(fmtDateTime(r.time)) + '</span></div>';
+  html += '<div class="detail-row"><span class="k">诊次</span><span class="v">' +
+          (r.visitNo > 0 ? '复诊第 ' + r.visitNo + ' 次' : '初诊') + '</span></div>';
+  html += '<div class="detail-row"><span class="k">开药</span><span class="v" style="color:' +
+          (r.needMedicine ? '#d92c20' : '#111') + '">' +
+          (r.needMedicine ? '已开药' : '未开药') + '</span></div>';
+  html += '</div>';
+
+  html += '<div class="detail-section"><div class="detail-title">病史</div>';
+  html += '<div class="detail-row"><span class="k">手术</span><span class="v">' +
+          (r.surgery === 'yes' ? ('有' + (r.surgeryNote ? '（' + esc(r.surgeryNote) + '）' : '')) : '无') + '</span></div>';
+  html += '<div class="detail-row"><span class="k">西药</span><span class="v">' +
+          (r.westMedicine === 'yes'
+            ? ('有' + (r.westMedicineType ? '（' + esc(r.westMedicineType) + '）' : '') +
+               (r.westMedicineTime ? ' · ' + esc(r.westMedicineTime) : ''))
+            : '无') + '</span></div>';
+  html += '<div class="detail-row"><span class="k">疫苗</span><span class="v">' +
+          (r.vaccine === 'yes' ? ('打过' + (r.vaccineCount ? '（' + r.vaccineCount + ' 针）' : '')) : '未打') + '</span></div>';
+  html += '<div class="detail-row"><span class="k">基础病</span><span class="v">' +
+          (r.baseDisease === 'yes' ? esc(r.baseNote || '有（未填详情）') : '无') + '</span></div>';
+  html += '</div>';
+
+  if (r.mainIssue){
+    html += '<div class="detail-section"><div class="detail-title">主要问题自述</div>' +
+            '<div class="detail-text bold">' + esc(r.mainIssue) + '</div></div>';
+  }
+
+  html += '<div class="detail-section"><div class="detail-title">问诊</div>';
+  html += '<div class="detail-grid">';
+  html += detailCell('口干口苦', joinQ(r.kouGan, r.kouGanOther));
+  html += detailCell('喝水情况', joinQ(r.heShui, r.heShuiOther));
+  html += detailCell('出汗情况', joinQ(r.chuHan, r.chuHanOther));
+  html += detailCell('汗多处',   joinQ(r.hanWhere, r.hanWhereOther));
+  const sjExtras = [];
+  if (r.guoXi) sjExtras.push('冷过膝');
+  if (r.shouJiaoHan) sjExtras.push('手脚心有汗');
+  html += detailCell('手脚冷热', joinQ(r.shouJiao, r.shouJiaoOther, sjExtras));
+  html += detailCell('寒热情况', joinQ(r.hanRe, r.hanReOther));
+  const smExtras = [];
+  if (r.banYeXing) smExtras.push('半夜会醒');
+  if (r.xingHouNanShui) smExtras.push('醒后难入睡');
+  else if (r.xingHouNengShui) smExtras.push('醒后能入睡');
+  html += detailCell('睡眠情况', joinQ(r.shuiMian, r.shuiMianOther, smExtras));
+  html += detailCell('胃口情况', joinQ(r.weiKou, r.weiKouOther));
+  const dbExtras = [];
+  if (r.bianMi) dbExtras.push('便秘 ' + r.bianMi + ' 日');
+  html += detailCell('大便情况', joinQ(r.daBian, r.daBianOther, dbExtras));
+  const xbExtras = [];
+  if (r.qiYe) xbExtras.push('起夜 ' + r.qiYe + ' 次');
+  html += detailCell('小便情况', joinQ(r.xiaoBian, r.xiaoBianOther, xbExtras));
+  const ljExtras = [];
+  if (r.zhunShi === 'yes') ljExtras.push('准时：是');
+  if (r.zhunShi === 'no')  ljExtras.push('准时：否');
+  if (r.tuiQian) ljExtras.push(r.tuiQian);
+  html += detailCell('例假情况', joinQ(r.liJia, r.liJiaOther, ljExtras));
+  html += '</div></div>';
+
+  html += '<div class="detail-section"><div class="detail-title">舌苔情况</div>';
+  html += '<div class="detail-grid">';
+  SHE_GROUPS.forEach(g => {
+    html += detailCell(g.label, joinQ(r[g.key], r[g.key + 'Other']));
+  });
+  html += '</div></div>';
+
+  html += '<div class="detail-section"><div class="detail-title">脉诊情况</div>';
+  html += renderMaiDetail(r);
+  html += '</div>';
+
+  html += '<div class="detail-section"><div class="detail-title">腹诊</div>';
+  const abdCells = [];
+  const abd = r.abdomen || {};
+  ABD_AREAS.forEach(a => {
+    const v = abd[a.key];
+    if (!v) return;
+    const fs = v.findings || [];
+    const hasRef = v.referred && v.referredText;
+    if (!fs.length && !hasRef) return;
+    let val = fs.join('、');
+    if (hasRef) val = val ? (val + '（牵扯：' + v.referredText + '）') : ('牵扯：' + v.referredText);
+    abdCells.push('<div class="detail-cell"><span class="k">' + a.label +
+                  '</span><span class="v">' + esc(val) + '</span></div>');
+  });
+  if (abdCells.length) html += '<div class="detail-grid">' + abdCells.join('') + '</div>';
+  else html += '<div class="none">未记录腹诊异常</div>';
+  if (r.abdOverall){
+    html += '<div style="margin-top:10px">' +
+            '<div class="detail-title" style="border:0;padding:0;margin:0 0 6px">整体腹部触诊判断</div>' +
+            '<div class="detail-text">' + esc(r.abdOverall) + '</div></div>';
+  }
+  html += '</div>';
+
+  if (r.images && r.images.length){
+    html += '<div class="detail-section">';
+    html += '<div class="detail-title">舌苔照片（' + r.images.length + ' 张）</div>';
+    html += '<div class="img-grid">';
+    r.images.forEach(img => {
+      html += '<div class="img-cell">' +
+              '<img data-imgid="' + img.id + '" onclick="viewImage(\'' + img.id + '\')" style="cursor:pointer">' +
+              '</div>';
+    });
+    html += '</div></div>';
+  }
+
+  body.innerHTML = html;
+  body.querySelectorAll('img[data-imgid]').forEach(el => {
+    imgGet(el.dataset.imgid).then(url => { if (url) el.src = url; });
+  });
+  const foot = document.getElementById('detailFoot');
+  foot.innerHTML =
+    '<button class="btn btn-followup" onclick="followUpCurrent()">复诊（另存为新的记录）</button>' +
+    '<div style="display:flex;gap:10px;width:100%">' +
+      '<button class="btn btn-danger" onclick="deleteCurrent()">删除</button>' +
+      '<button class="btn btn-primary" onclick="editCurrent()">编辑</button>' +
+    '</div>';
+  document.getElementById('detailModal').classList.add('open');
+  document.body.classList.add('locked');
+}
+async function viewImage(id){
+  const url = await imgGet(id);
+  if (!url) return;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.92);' +
+    'display:flex;align-items:center;justify-content:center;padding:16px';
+  const im = document.createElement('img');
+  im.src = url;
+  im.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain';
+  overlay.appendChild(im);
+  overlay.addEventListener('click', () => overlay.remove());
+  document.body.appendChild(overlay);
+}
+function closeDetail(){
+  document.getElementById('detailModal').classList.remove('open');
+  document.body.classList.remove('locked');
+  detailId = null;
+}
+function editCurrent(){
+  const r = records.find(x => x.id === detailId);
+  if (!r) return;
+  closeDetail();
+  setTimeout(() => openForm(r), 60);
+}
+function followUpCurrent(){
+  const r = records.find(x => x.id === detailId);
+  if (!r) return;
+  makeFollowUp(r);
+}
+function deleteCurrent(){
+  if (!detailId) return;
+  if (!confirm('确定删除这条记录？')) return;
+  const r = records.find(x => x.id === detailId);
+  if (r && r.images) r.images.forEach(img => imgDel(img.id).catch(()=>{}));
+  records = records.filter(x => x.id !== detailId);
+  saveRecords();
+  closeDetail();
+  render();
+}
+
+/* ================= 导入导出 ================= */
+function exportData(){
+  if (!records.length){ alert('暂无数据'); return; }
+  const blob = new Blob([JSON.stringify(records, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const d = new Date();
+  a.download = 'wenzhen-' + d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function importData(){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.onchange = function(){
+    const file = this.files && this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(){
+      try{
+        const data = JSON.parse(this.result);
+        if (!Array.isArray(data)) throw new Error('格式不正确');
+        if (!confirm('将导入 ' + data.length + ' 条记录，与现有数据合并（相同 id 不重复）。\n\n注意：图片不会随 JSON 导入。继续？')) return;
+        const ids = new Set(records.map(r => r.id));
+        let added = 0;
+        data.forEach(r => {
+          if (r && r.id != null && !ids.has(r.id)){ records.push(r); ids.add(r.id); added++; }
+        });
+        saveRecords();
+        render();
+        alert('导入成功，新增 ' + added + ' 条');
+      }catch(e){ alert('导入失败：' + e.message); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+/* ================= 事件 ================= */
+(function init(){
+  buildQForm();
+  buildSheForm();
+  initBirthSelects();
+  ['fSex','fSurgery','fWestMed','fVaccine','fBase','fZhunShi','fMed','fBirthType'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e){
+      const btn = e.target.closest('.seg-btn');
+      if (!btn) return;
+      setSeg(id, btn.dataset.val);
+      if (id === 'fSurgery') toggleSurgery();
+      if (id === 'fWestMed') toggleWestMed();
+      if (id === 'fVaccine') toggleVaccine();
+      if (id === 'fBase') toggleBase();
+    });
+  });
+  document.getElementById('formModal').addEventListener('click', function(e){
+    const delBtn = e.target.closest('[data-delimg]');
+    if (delBtn){
+      e.stopPropagation();
+      const i = +delBtn.dataset.delimg;
+      if (!isNaN(i)){ currentImages.splice(i, 1); renderImagePreview(); }
+      return;
+    }
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    if (chip.dataset.other){
+      chip.classList.toggle('active');
+      const key = chip.parentElement.dataset.chips;
+      const input = document.querySelector('[data-other-for="'+key+'"]');
+      if (input){
+        if (chip.classList.contains('active')){ input.style.display = ''; setTimeout(() => input.focus(), 30); }
+        else { input.style.display = 'none'; input.value = ''; }
+      }
+      return;
+    }
+    chip.classList.toggle('active');
+  });
+  document.getElementById('formModal').addEventListener('focusout', function(e){
+    const input = e.target;
+    if (!input.classList || !input.classList.contains('other-input')) return;
+    setTimeout(() => {
+      if (input.value.trim() === ''){
+        const key = input.dataset.otherFor;
+        const chip = document.querySelector('[data-chips="'+key+'"] .chip-other');
+        if (chip){ chip.classList.remove('active'); input.style.display = 'none'; }
+      }
+    }, 150);
+  });
+  document.getElementById('fImages').addEventListener('change', async function(){
+    const files = Array.from(this.files || []);
+    this.value = '';
+    if (!files.length) return;
+    if (currentImages.length + files.length > 9){ alert('最多上传 9 张图片'); return; }
+    for (const file of files){
+      if (!file.type.startsWith('image/')) continue;
+      try{
+        const dataUrl = await compressImage(file, 1200, 0.82);
+        const id = 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        await imgPut(id, dataUrl);
+        currentImages.push({id, name: file.name || ''});
+      }catch(err){ alert('图片处理失败：' + err.message); }
+    }
+    renderImagePreview();
+  });
+  document.getElementById('formModal').addEventListener('click', function(e){ if (e.target === this) closeForm(); });
+  document.getElementById('detailModal').addEventListener('click', function(e){ if (e.target === this) closeDetail(); });
+  initAllChips(null);
+  render();
+})();
+</script>
+</body>
+</html>
